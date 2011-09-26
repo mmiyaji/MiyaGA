@@ -23,8 +23,20 @@ class GeneticAlgorithm:
 			print "Initial individuals:"
 			for i in self.genes:
 				for i in self.split_gene(i.gene):
-					print self.binary_to_gray(i), self.scaling(self.binary_to_gray(i), -5.12, 5.12)
-
+					print self.scaling(self.binary_to_gray(i), -5.12, 5.12)
+	
+	def isfinish(self, count = 1):
+		if self.parameta.max_generation <= count:
+			return True
+		else:
+			return False
+	
+	def crossover(self):
+		pass
+	
+	def mutation(self):
+		pass
+	
 	def scaling(self, val, min, max):
 		length = self.parameta.gene_length
 		if self.parameta.scaling_method is "liner":	
@@ -60,7 +72,7 @@ class GeneticAlgorithm:
 	def gray_to_binary(gray):
 		binary = [0] * len(gray)
 		binary[0] = gray[0]
-		for i in range(len(gray)):
+		for i in xrange(1,len(gray)):
 			binary[i] = binary[i-1]^gray[i]
 		return binary
 	
@@ -68,7 +80,12 @@ def main():
 	para = Parameta(random_seed=1)
 	ga = GeneticAlgorithm(para)
 	
-	
+	generation = 1
+	while not ga.isfinish(generation):
+
+
+		print "Generation:",generation
+		generation +=1
 	
 	
 	
