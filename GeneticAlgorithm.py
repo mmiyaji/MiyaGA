@@ -49,12 +49,26 @@ class GeneticAlgorithm:
 			rate_sum = 0
 			# for i in self.gene:
 			# 	rate_sum += self.
+		elif self.parameta.selection_method is "tournament":
+			choices = random.sample(self.genes, self.parameta.tournament_size)
+			sorted_choices = sorted(choices,key=lambda x: self.evaluation(x.gene),reverse=False)
+			result = sorted_choices[2:]
 		return result
 
 	def crossover(self):
 		if self.parameta.crossover_method is "single":
-			selected = self.selection
-			
+			point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
+			selected = self.selection()
+			gene1 = selected[0].gene[point:] + selected[0].gene[:point]
+			# gene1.extends(selected[0].gene[:point])
+			gene2 = selected[1].gene[point:] + selected[1].gene[:point]
+			# gene2.extends(selected[1].gene[:point])
+			# 
+			# print gene1,gene2
+			# for i in selected:
+			# 	print i.gene
+			selected[0].gene = gene1
+			selected[1].gene = gene2
 	
 	def mutation(self):
 		if self.parameta.mutation_method is "normal":
