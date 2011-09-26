@@ -23,13 +23,19 @@ class GeneticAlgorithm:
 			print "Initial individuals:"
 			for i in self.genes:
 				for i in self.split_gene(i.gene):
-					print self.scaling(self.binary_to_gray(i), -5.12, 5.12)
+					print self.scaling(self.binary_to_decimal(self.gray_to_binary(i)), -5.12, 5.12)
 	
 	def isfinish(self, count = 1):
 		if self.parameta.max_generation <= count:
 			return True
 		else:
 			return False
+
+	def evaluation(self, gene):
+		pass
+		
+	def selection(self):
+		pass
 	
 	def crossover(self):
 		pass
@@ -60,32 +66,33 @@ class GeneticAlgorithm:
 		return gene
 	
 	@staticmethod
-	def binary_to_gray(binary):
-		print binary
+	def gray_to_binary(gray):
+		binary = []
+		binary.append(gray[0])
+		for i in xrange(1,len(gray)):
+			binary.append(binary[i-1]^gray[i])
+		return binary
+	
+	@staticmethod
+	def binary_to_decimal(binary):
 		decimal = 0
 		length = len(binary)
 		for k in range(length):
 			decimal += binary[k]*(2**(length-k-1))
 		return decimal
 	
-	@staticmethod
-	def gray_to_binary(gray):
-		binary = [0] * len(gray)
-		binary[0] = gray[0]
-		for i in xrange(1,len(gray)):
-			binary[i] = binary[i-1]^gray[i]
-		return binary
 	
 def main():
 	para = Parameta(random_seed=1)
 	ga = GeneticAlgorithm(para)
-	
-	generation = 1
-	while not ga.isfinish(generation):
-
-
-		print "Generation:",generation
-		generation +=1
+	print ga.gray_to_binary([1,1,1,1])
+	# generation = 0
+	# while not ga.isfinish(generation):
+	# 	generation +=1
+	# 	
+	# 	
+	# 	
+	# 	print "Generation:",generation
 	
 	
 	
