@@ -11,7 +11,7 @@ import random, time
 
 class Parameta:
 	"""docstring for Parameta"""
-	def __init__(self, random_seed = time.time(), gene_length=100, dimention=2, population_size=10, max_generation=1000,
+	def __init__(self, random_seed = time.time(), gene_length=100, dimention=2, population_size=10, max_generation=100,
 					scaling_method="liner", 
 					selection_method="tournament", tournament_size = 5, 
 					crossover_method="single", crossover_rate=1,

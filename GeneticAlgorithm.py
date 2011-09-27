@@ -24,9 +24,14 @@ class GeneticAlgorithm:
 			self.show_evaluations()
 
 	def show_evaluations(self):
+		sum = 0
 		for i in self.genes:
-			print self.calc_decimal(i.gene),
-			
+			res = self.evaluation(i.gene)
+			print res,i.gene
+			sum += res
+		print 
+		print sum/len(self.genes)
+		
 	def isfinish(self, count = 1):
 		if self.parameta.max_generation <= count:
 			return True
@@ -34,12 +39,24 @@ class GeneticAlgorithm:
 			return False
 
 	def evaluation(self, gene):
-		return self.rastrigin(gene)
-
+		# return self.onemax(gene)
+		arr = []
+		for i in self.split_gene(gene):
+			arr.append(self.scaling(self.binary_to_decimal(self.gray_to_binary(i)), -5.12, 5.12))
+		return self.rastrigin(arr)
+	
+	@staticmethod
+	def onemax(gene):
+		value = 0
+		for i in gene:
+			if i == 1:
+				value += 1
+		return -value
+	
 	@staticmethod
 	def rastrigin(ary):
 		value = 0.0
-		for i in range(len(ary)):
+		for i in xrange(len(ary)):
 			value += ary[i] * ary[i] - 10 * math.cos(2 * math.pi * ary[i])
 		return 10 * len(ary) + value
 
@@ -52,27 +69,43 @@ class GeneticAlgorithm:
 		elif self.parameta.selection_method is "tournament":
 			choices = random.sample(self.genes, self.parameta.tournament_size)
 			sorted_choices = sorted(choices,key=lambda x: self.evaluation(x.gene),reverse=False)
-			result = sorted_choices[2:]
+			# for i in sorted_choices:
+			# 	print self.calc_decimal(i.gene),
+			result = sorted_choices[:2]
+			# print "####"
+			# for i in result:
+			# 	print self.calc_decimal(i.gene),
+			# print "$$$$"
+			# print self.evaluation(result[1].gene)
 		return result
 
 	def crossover(self):
 		if self.parameta.crossover_method is "single":
-			point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
-			selected = self.selection()
-			gene1 = selected[0].gene[point:] + selected[0].gene[:point]
-			# gene1.extends(selected[0].gene[:point])
-			gene2 = selected[1].gene[point:] + selected[1].gene[:point]
-			# gene2.extends(selected[1].gene[:point])
-			# 
-			# print gene1,gene2
-			# for i in selected:
-			# 	print i.gene
-			selected[0].gene = gene1
-			selected[1].gene = gene2
-	
+			genes = []
+			for i in xrange(self.parameta.population_size):
+				point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
+				selected = self.selection()
+
+				if self.parameta.crossover_rate > random.random():
+					gene1 = selected[0].gene[point:] + selected[1].gene[:point]
+					gene2 = selected[1].gene[point:] + selected[0].gene[:point]
+				else:
+					gene1 = selected[0].gene
+					gene2 = selected[1].gene
+				genes.append(Individual(id=selected[0].id, parameta=self.parameta, gene = gene1))
+				genes.append(Individual(id=selected[1].id, parameta=self.parameta, gene = gene2))
+			self.genes = genes
+
 	def mutation(self):
 		if self.parameta.mutation_method is "normal":
-			pass
+			# for i in xrange(self.parameta.population_size):
+			for i in self.genes:
+				if self.parameta.mutation_rate > random.random():
+					point = random.randint(0,(self.parameta.gene_length*self.parameta.dimention)-1)
+					if i.gene[point]:
+						i.gene[point] = 1
+					else:
+						i.gene[point] = 0
 	
 	def scaling(self, val, min, max):
 		length = self.parameta.gene_length
@@ -118,11 +151,11 @@ class GeneticAlgorithm:
 			decimal += binary[i]*(2**(length-i-1))
 		return decimal
 	
-	
 def main():
-	para = Parameta(random_seed=1)
+	para = Parameta(random_seed=None, gene_length=5, population_size=400, 
+					tournament_size=4, max_generation=100)
 	ga = GeneticAlgorithm(para)
-	print ga.gray_to_binary([1,1,1,1])
+	# print ga.gray_to_binary([1,1,1,1])
 	generation = 0
 	while not ga.isfinish(generation):
 		generation +=1
@@ -131,7 +164,23 @@ def main():
 			ga.show_evaluations()
 		ga.crossover()
 		ga.mutation()
-	print "finish:",ga.show_evaluations()
+	print "finish:",
+	ga.show_evaluations()
+	
+	# para = Parameta(random_seed=3, gene_length=3, dimention=2, population_size=5, 
+	# 				tournament_size=5, max_generation=1)
+	# ga = GeneticAlgorithm(para)
+	# # print ga.gray_to_binary([1,1,1,1])
+	# point = random.randint(1,(para.gene_length*para.dimention)-1)
+	# selected = [Individual(id=1, parameta=para, gene=[1,1,1,1,1,1]),Individual(id=2, parameta=para, gene=[0,0,0,0,0,0])]
+	# 
+	# gene1 = selected[0].gene[point:] + selected[1].gene[:point]
+	# gene2 = selected[1].gene[point:] + selected[0].gene[:point]
+	# 
+	# selected[0].gene = gene1
+	# selected[1].gene = gene2
+	# print gene1, selected[0].gene
+	# print gene2, selected[1].gene
 
 if __name__ == '__main__':
 	main()
