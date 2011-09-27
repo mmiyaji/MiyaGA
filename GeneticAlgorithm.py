@@ -17,7 +17,6 @@ class GeneticAlgorithm:
 	"""docstring for GeneticAlgorithm"""
 	def __init__(self, parameta = Parameta()):
 		self.parameta = parameta
-		# self.genes = [Individual(id=i, parameta=self.parameta) for i in xrange(self.parameta.population_size)]
 		self.genes = [Individual(id=i, parameta=self.parameta) for i in xrange(self.parameta.population_size)]
 		if deb:
 			print "Initial individuals:"
@@ -27,10 +26,10 @@ class GeneticAlgorithm:
 		sum = 0
 		for i in self.genes:
 			res = self.evaluation(i.gene)
-			print res,i.gene
+			# print "#",res,i.gene
 			sum += res
-		print 
-		print sum/len(self.genes)
+		# print 
+		# print sum/len(self.genes)
 		
 	def isfinish(self, count = 1):
 		if self.parameta.max_generation <= count:
@@ -42,7 +41,15 @@ class GeneticAlgorithm:
 		# return self.onemax(gene)
 		arr = []
 		for i in self.split_gene(gene):
-			arr.append(self.scaling(self.binary_to_decimal(self.gray_to_binary(i)), -5.12, 5.12))
+			# print "I:",i,
+			j = self.gray_to_binary(i)
+			# print "J:",j,
+			k = self.binary_to_decimal(j)
+			# print "K:",k,
+			s = self.scaling(k, -5.12, 5.12)
+			# print "S:",s
+			arr.append(s)
+		# print arr
 		return self.rastrigin(arr)
 	
 	@staticmethod
@@ -56,8 +63,8 @@ class GeneticAlgorithm:
 	@staticmethod
 	def rastrigin(ary):
 		value = 0.0
-		for i in xrange(len(ary)):
-			value += ary[i] * ary[i] - 10 * math.cos(2 * math.pi * ary[i])
+		for i in ary:
+			value += i * i - 10 * math.cos(2 * math.pi * i)
 		return 10 * len(ary) + value
 
 	def selection(self):
@@ -82,7 +89,24 @@ class GeneticAlgorithm:
 	def crossover(self):
 		if self.parameta.crossover_method is "single":
 			genes = []
-			for i in xrange(self.parameta.population_size):
+			eliets = sorted(self.genes,key=lambda x: self.evaluation(x.gene),reverse=False)[:2]
+			# for i in eliets:
+			# 	print "E:",self.evaluation(i.gene)
+			print self.evaluation(eliets[0].gene), ",", 
+			for i in self.split_gene(eliets[0].gene):
+				# print "I:",i,
+				j = self.gray_to_binary(i)
+				# print "J:",j,
+				k = self.binary_to_decimal(j)
+				# print "K:",k,
+				s = self.scaling(k, -5.12, 5.12)
+				print s,
+			# for i in eliets[0].gene:
+			# 	print i,
+			print 
+			genes.append(Individual(id=eliets[0].id, parameta=self.parameta, gene = eliets[0].gene))
+			genes.append(Individual(id=eliets[1].id, parameta=self.parameta, gene = eliets[1].gene))
+			for i in xrange(self.parameta.population_size - int(math.ceil(self.parameta.eliet_rate/2.0))):
 				point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
 				selected = self.selection()
 
@@ -103,9 +127,9 @@ class GeneticAlgorithm:
 				if self.parameta.mutation_rate > random.random():
 					point = random.randint(0,(self.parameta.gene_length*self.parameta.dimention)-1)
 					if i.gene[point]:
-						i.gene[point] = 1
-					else:
 						i.gene[point] = 0
+					else:
+						i.gene[point] = 1
 	
 	def scaling(self, val, min, max):
 		length = self.parameta.gene_length
@@ -152,21 +176,23 @@ class GeneticAlgorithm:
 		return decimal
 	
 def main():
-	para = Parameta(random_seed=None, gene_length=5, population_size=400, 
-					tournament_size=4, max_generation=100)
+	para = Parameta(random_seed=None, gene_length=100, dimention=2, population_size=4, 
+					tournament_size=2, max_generation=100, mutation_rate=0.2)
 	ga = GeneticAlgorithm(para)
 	# print ga.gray_to_binary([1,1,1,1])
 	generation = 0
 	while not ga.isfinish(generation):
 		generation +=1
-		print "Generation:",generation
+		# print "Generation:",generation,
+		print generation,",",
 		if deb:
 			ga.show_evaluations()
 		ga.crossover()
 		ga.mutation()
 	print "finish:",
 	ga.show_evaluations()
-	
+	# print "LAST"
+	# print ga.rastrigin([0,0])
 	# para = Parameta(random_seed=3, gene_length=3, dimention=2, population_size=5, 
 	# 				tournament_size=5, max_generation=1)
 	# ga = GeneticAlgorithm(para)
