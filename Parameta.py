@@ -16,7 +16,7 @@ class Parameta:
 					selection_method="tournament", tournament_size = 5, 
 					crossover_method="single", crossover_rate=1,
 					mutation_method="normal", mutation_rate=0.1,
-					eliet_method="save", eliet_rate=1):
+					eliet_method="save", eliet_rate=2):
 		random.seed(random_seed)
 		self.gene_length = gene_length
 		self.dimention = dimention
@@ -29,7 +29,8 @@ class Parameta:
 		self.crossover_rate = crossover_rate
 		self.mutation_method = mutation_method
 		self.mutation_rate = mutation_rate
-		self.eliet_method = eliet_rate
+		self.eliet_method = eliet_method
+		self.eliet_rate = eliet_rate
 		
 def main():
 	pass
