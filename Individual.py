@@ -18,8 +18,24 @@ class Individual:
 		self.parameta = parameta
 		if gene:
 			self.gene = gene
+			# self.gene = []
+			# for i in gene:
+			# 	self.gene.append(i)
 		else:
 			self.gene = [random.choice([0,1]) for i in xrange(parameta.gene_length*parameta.dimention)]
+
+	def split_gene(self):
+		genes = []
+		for j in xrange(0,self.parameta.dimention):
+			genes.append(self.gene[self.parameta.gene_length*(j):self.parameta.gene_length*(j+1)])
+		return genes
+
+	@staticmethod
+	def joint_gene(genes):
+		gene = []
+		for i in genes:
+			gene.extends(i)
+		return gene
 	
 	def gray_to_binary(self):
 		binary = []

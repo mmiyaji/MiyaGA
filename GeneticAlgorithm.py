@@ -26,7 +26,7 @@ class GeneticAlgorithm:
 		sum = 0
 		for i in self.genes:
 			res = self.evaluation(i.gene)
-			# print "#",res,i.gene
+			# print "#",i.id,res,i.gene
 			sum += res
 		# print 
 		# print sum/len(self.genes)
@@ -88,6 +88,9 @@ class GeneticAlgorithm:
 
 	def crossover(self):
 		if self.parameta.crossover_method is "single":
+			print "&"
+			self.show_evaluations()
+			print "$"
 			genes = []
 			eliets = sorted(self.genes,key=lambda x: self.evaluation(x.gene),reverse=False)[:2]
 			# for i in eliets:
@@ -106,20 +109,21 @@ class GeneticAlgorithm:
 			print 
 			genes.append(Individual(id=eliets[0].id, parameta=self.parameta, gene = eliets[0].gene))
 			genes.append(Individual(id=eliets[1].id, parameta=self.parameta, gene = eliets[1].gene))
-			for i in xrange(self.parameta.population_size - int(math.ceil(self.parameta.eliet_rate/2.0))):
+			for i in xrange(int(math.ceil((self.parameta.population_size - self.parameta.eliet_rate)/2.0))):
 				point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
 				selected = self.selection()
-
 				if self.parameta.crossover_rate > random.random():
-					gene1 = selected[0].gene[point:] + selected[1].gene[:point]
-					gene2 = selected[1].gene[point:] + selected[0].gene[:point]
+					gene1 = selected[0].gene[:point] + selected[1].gene[point:]
+					gene2 = selected[1].gene[:point] + selected[0].gene[point:]
 				else:
 					gene1 = selected[0].gene
 					gene2 = selected[1].gene
 				genes.append(Individual(id=selected[0].id, parameta=self.parameta, gene = gene1))
 				genes.append(Individual(id=selected[1].id, parameta=self.parameta, gene = gene2))
 			self.genes = genes
-
+			print "!"
+			self.show_evaluations()
+			print "%"
 	def mutation(self):
 		if self.parameta.mutation_method is "normal":
 			# for i in xrange(self.parameta.population_size):
@@ -176,8 +180,8 @@ class GeneticAlgorithm:
 		return decimal
 	
 def main():
-	para = Parameta(random_seed=None, gene_length=100, dimention=2, population_size=4, 
-					tournament_size=2, max_generation=100, mutation_rate=0.2)
+	para = Parameta(random_seed=None, gene_length=20, dimention=2, population_size=100, 
+					tournament_size=4, max_generation=100, mutation_rate=0.2,crossover_rate=1.0, eliet_rate=4)
 	ga = GeneticAlgorithm(para)
 	# print ga.gray_to_binary([1,1,1,1])
 	generation = 0
