@@ -7,7 +7,7 @@ Created by Masahiro MIYAJI on 2011-09-23.
 Copyright (c) 2011 ISDL. All rights reserved.
 """
 
-import random, math
+import random, math, sys
 from Parameta import *
 from Individual import *
 
@@ -31,10 +31,12 @@ class GeneticAlgorithm:
 			self.genes.pop()
 			self.genes.insert(0,i)
 	
-	def show_eliet(self, num = 1):
+	def show_eliet(self, num = 1, out = False):
 		eliets = self.get_eliet(num)
 		for i in eliets:
-			print self.evaluation(i.gene),",\t",
+			print self.evaluation(i.gene),", ",
+			if out:
+				continue
 			for m in i.split_gene():
 				# print "I:",i,
 				j = self.gray_to_binary(m)
@@ -46,7 +48,8 @@ class GeneticAlgorithm:
 			# print self.evaluation(i.gene),
 			# for j in i.gene:
 			# 	print j,",",
-		print 
+		if not out:
+			print 
 		
 	def fileout_plots(self):
 		sum = 0
@@ -255,6 +258,11 @@ class GeneticAlgorithm:
 		return decimal
 	
 def main():
+	
+	args = sys.argv
+	out = False
+	if len(args) > 1:
+		out = True
 	para = Parameta(random_seed=None, gene_length=10, dimention=10, population_size=400, 
 					crossover_method="multi",
 					tournament_size=4, max_generation=200, mutation_rate=0.01,crossover_rate=1.0, eliet_rate=1)
@@ -264,10 +272,11 @@ def main():
 	while not ga.isfinish(generation):
 		generation +=1
 		# print "Generation:",generation,
-		print generation,",",
+		if not out:
+			print generation,",",
 		if deb:
 			# ga.show_evaluations()
-			ga.show_eliet()
+			ga.show_eliet(out = out)
 			# f = open("log/Ruhenheim/animation02/animate_"+str(generation)+".csv","w")
 			# f.write(ga.fileout_plots())
 			# f.close()
