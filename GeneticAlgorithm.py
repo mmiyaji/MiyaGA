@@ -25,6 +25,11 @@ class GeneticAlgorithm:
 	def get_eliet(self, num = 1):
 		eliets = sorted(self.genes,key=lambda x: self.evaluation(x.gene),reverse=False)[:num]
 		return eliets
+		
+	def set_eliet(self, eliets):
+		for i in eliets:
+			self.genes.pop()
+			self.genes.insert(0,i)
 	
 	def show_eliet(self, num = 1):
 		eliets = self.get_eliet(num)
@@ -113,7 +118,7 @@ class GeneticAlgorithm:
 		return 10 * len(ary) + value
 
 	def selection(self):
-		result = []
+		genes = []
 		if self.parameta.selection_method is "roulette":
 			rate_sum = 0
 			# for i in self.gene:
@@ -122,7 +127,8 @@ class GeneticAlgorithm:
 			for i in xrange(self.parameta.population_size):
 				choices = random.sample(self.genes, self.parameta.tournament_size)
 				sorted_choiced = sorted(choices,key=lambda x: self.evaluation(x.gene),reverse=False)[0]
-				result.append(sorted_choiced)
+				genes.append(Individual(id=sorted_choiced.id, parameta=self.parameta, gene = sorted_choiced.gene))
+				# result.append(sorted_choiced)
 			# sorted_choices = sorted(choices,key=lambda x: self.evaluation(x.gene),reverse=False)
 			# # for i in sorted_choices:
 			# # 	print self.calc_decimal(i.gene),
@@ -132,10 +138,8 @@ class GeneticAlgorithm:
 			# 	print self.calc_decimal(i.gene),
 			# print "$$$$"
 			# print self.evaluation(result[1].gene)
-		
-		self.genes = result
-		
-		return result
+		self.genes = genes
+		return genes
 
 	def crossover(self):
 		genes = []
@@ -253,7 +257,7 @@ class GeneticAlgorithm:
 def main():
 	para = Parameta(random_seed=None, gene_length=10, dimention=10, population_size=400, 
 					crossover_method="multi",
-					tournament_size=4, max_generation=500, mutation_rate=0.01,crossover_rate=1.0, eliet_rate=1)
+					tournament_size=4, max_generation=200, mutation_rate=0.01,crossover_rate=1.0, eliet_rate=1)
 	ga = GeneticAlgorithm(para)
 	# print ga.gray_to_binary([1,1,1,1])
 	generation = 0
@@ -267,9 +271,11 @@ def main():
 			# f = open("log/Ruhenheim/animation02/animate_"+str(generation)+".csv","w")
 			# f.write(ga.fileout_plots())
 			# f.close()
+		eliets = ga.get_eliet(para.eliet_rate)
 		ga.selection()
 		ga.crossover()
 		ga.mutation()
+		ga.set_eliet(eliets)
 	# print "finish:",
 	# ga.show_evaluations()
 	# print "LAST"
