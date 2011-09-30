@@ -18,16 +18,60 @@ class GeneticAlgorithm:
 	def __init__(self, parameta = Parameta()):
 		self.parameta = parameta
 		self.genes = [Individual(id=i, parameta=self.parameta) for i in xrange(self.parameta.population_size)]
-		if deb:
-			print "Initial individuals:"
-			self.show_evaluations()
-
+		# if deb:
+		# 	#print "Initial individuals:"
+		# 	self.show_evaluations()
+	
+	def get_eliet(self, num = 1):
+		eliets = sorted(self.genes,key=lambda x: self.evaluation(x.gene),reverse=False)[:num]
+		return eliets
+	
+	def show_eliet(self, num = 1):
+		eliets = self.get_eliet(num)
+		for i in eliets:
+			print self.evaluation(i.gene),",\t",
+			for m in i.split_gene():
+				# print "I:",i,
+				j = self.gray_to_binary(m)
+				# print "J:",j,
+				k = self.binary_to_decimal(j)
+				# print "K:",k,
+				s = self.scaling(k, -5.12, 5.12)
+				print s,",\t",
+			# print self.evaluation(i.gene),
+			# for j in i.gene:
+			# 	print j,",",
+		print 
+		
+	def fileout_plots(self):
+		sum = 0
+		string = ""
+		for i in self.genes:
+			res = self.evaluation(i.gene)
+			string += str(res) + ", "
+			# print res,",",
+			for m in i.split_gene():
+				j = self.gray_to_binary(m)
+				# print "J:",j,
+				k = self.binary_to_decimal(j)
+				# print "K:",k,
+				s = self.scaling(k, -5.12, 5.12)
+				# print s,",",
+				string += str(s) + ", "
+			# print "#",i.id,res,i.gene
+			string += "\n"
+			# sum += res
+		# print string
+		return string
+		# print sum/len(self.genes)
+	
 	def show_evaluations(self):
 		sum = 0
 		for i in self.genes:
 			res = self.evaluation(i.gene)
+			print res,",",
 			# print "#",i.id,res,i.gene
-			sum += res
+			# sum += res
 		# print 
 		# print sum/len(self.genes)
 		
@@ -47,7 +91,8 @@ class GeneticAlgorithm:
 			k = self.binary_to_decimal(j)
 			# print "K:",k,
 			s = self.scaling(k, -5.12, 5.12)
-			# print "S:",s
+			# print "#",s,",",
+			
 			arr.append(s)
 		# print arr
 		return self.rastrigin(arr)
@@ -87,29 +132,16 @@ class GeneticAlgorithm:
 		return result
 
 	def crossover(self):
+		genes = []
+		eliets = self.get_eliet(2)
+		genes.append(Individual(id=eliets[0].id, parameta=self.parameta, gene = eliets[0].gene))
+		genes.append(Individual(id=eliets[1].id, parameta=self.parameta, gene = eliets[1].gene))
+
 		if self.parameta.crossover_method is "single":
-			print "&"
-			self.show_evaluations()
-			print "$"
-			genes = []
-			eliets = sorted(self.genes,key=lambda x: self.evaluation(x.gene),reverse=False)[:2]
-			# for i in eliets:
-			# 	print "E:",self.evaluation(i.gene)
-			print self.evaluation(eliets[0].gene), ",", 
-			for i in self.split_gene(eliets[0].gene):
-				# print "I:",i,
-				j = self.gray_to_binary(i)
-				# print "J:",j,
-				k = self.binary_to_decimal(j)
-				# print "K:",k,
-				s = self.scaling(k, -5.12, 5.12)
-				print s,
-			# for i in eliets[0].gene:
-			# 	print i,
-			print 
-			genes.append(Individual(id=eliets[0].id, parameta=self.parameta, gene = eliets[0].gene))
-			genes.append(Individual(id=eliets[1].id, parameta=self.parameta, gene = eliets[1].gene))
-			for i in xrange(int(math.ceil((self.parameta.population_size - self.parameta.eliet_rate)/2.0))):
+			# for i in xrange(int(math.ceil((self.parameta.population_size - self.parameta.eliet_rate)/2.0))):
+			while True:
+				if len(genes) >= self.parameta.population_size:
+					break
 				point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
 				selected = self.selection()
 				if self.parameta.crossover_rate > random.random():
@@ -121,9 +153,31 @@ class GeneticAlgorithm:
 				genes.append(Individual(id=selected[0].id, parameta=self.parameta, gene = gene1))
 				genes.append(Individual(id=selected[1].id, parameta=self.parameta, gene = gene2))
 			self.genes = genes
-			print "!"
-			self.show_evaluations()
-			print "%"
+		elif self.parameta.crossover_method is "multi":
+			cross_times = self.parameta.crossover_point
+			while True:
+				if len(genes) >= self.parameta.population_size:
+					break
+				# point = random.randint(1,(self.parameta.gene_length*self.parameta.dimention)-1)
+				points = random.sample(xrange(self.parameta.gene_length*self.parameta.dimention-2),cross_times)
+				selected = self.selection()
+				if self.parameta.crossover_rate > random.random():
+					for i in points:
+						point = i + 1
+						# print point,
+						gene1 = selected[0].gene[:point] + selected[1].gene[point:]
+						gene2 = selected[1].gene[:point] + selected[0].gene[point:]
+				else:
+					gene1 = selected[0].gene
+					gene2 = selected[1].gene
+				genes.append(Individual(id=selected[0].id, parameta=self.parameta, gene = gene1))
+				genes.append(Individual(id=selected[1].id, parameta=self.parameta, gene = gene2))
+			self.genes = genes
+				
+				
+			# print "!"
+			# self.show_evaluations()
+			# print "%"
 	def mutation(self):
 		if self.parameta.mutation_method is "normal":
 			# for i in xrange(self.parameta.population_size):
@@ -138,7 +192,7 @@ class GeneticAlgorithm:
 	def scaling(self, val, min, max):
 		length = self.parameta.gene_length
 		if self.parameta.scaling_method is "liner":	
-			value = -max + (val / (math.pow(2,length)-1)) * (max-min)
+			value = -max + (val / (math.pow(2,length))) * (max-min)
 		else:
 			value = 0
 			print "error"
@@ -180,8 +234,9 @@ class GeneticAlgorithm:
 		return decimal
 	
 def main():
-	para = Parameta(random_seed=None, gene_length=20, dimention=2, population_size=100, 
-					tournament_size=4, max_generation=100, mutation_rate=0.2,crossover_rate=1.0, eliet_rate=4)
+	para = Parameta(random_seed=None, gene_length=100, dimention=10, population_size=400, 
+					crossover_method="multi",
+					tournament_size=4, max_generation=500, mutation_rate=0.1,crossover_rate=1.0, eliet_rate=4)
 	ga = GeneticAlgorithm(para)
 	# print ga.gray_to_binary([1,1,1,1])
 	generation = 0
@@ -190,11 +245,15 @@ def main():
 		# print "Generation:",generation,
 		print generation,",",
 		if deb:
-			ga.show_evaluations()
+			# ga.show_evaluations()
+			ga.show_eliet()
+			# f = open("log/Ruhenheim/animation02/animate_"+str(generation)+".csv","w")
+			# f.write(ga.fileout_plots())
+			# f.close()
 		ga.crossover()
 		ga.mutation()
-	print "finish:",
-	ga.show_evaluations()
+	# print "finish:",
+	# ga.show_evaluations()
 	# print "LAST"
 	# print ga.rastrigin([0,0])
 	# para = Parameta(random_seed=3, gene_length=3, dimention=2, population_size=5, 
